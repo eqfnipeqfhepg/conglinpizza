@@ -7,9 +7,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script> 
-<script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGGvtowsI7pB9ymYHTwYLq8sBrXAZKpPI">
-</script>
+
 <script src="function.js"></script>
 <link rel="stylesheet" href="w3css.css" type="text/css" />
 <link href="templatemo_style.css" rel="stylesheet" type="text/css" />
@@ -101,7 +99,7 @@
 				<div class="row">
 					<div id = "contactInfo" class="col-sm-5" style="left: 150px">
 						<p style="margin-bottom: 25px">
-		    				<span class="glyphicon glyphicon-map-marker"></span> Address：University of Victoria
+		    				<span class="glyphicon glyphicon-map-marker"></span> Address: Victoria
 						</p>
 						<p style="margin-bottom: 25px">
 							<span class="glyphicon glyphicon-phone"></span> Phone：000 000 0000
@@ -114,27 +112,82 @@
             </div>
             <div id="templatemo_content_map">
 
-                <script>
-                    var map;
-                    function initialize() {  
-                        var mapOptions = {
-                            zoom: 14,    
-                            center: new google.maps.LatLng(48.463162, -123.312150)
-                        };  
-                        map = new google.maps.Map(document.getElementById('templatemo_content_map'), mapOptions);
-                        var marker = new google.maps.Marker({
-                            position: map.getCenter(),
-                            map: map,    
-                            title: 'Click to zoom'
-                        });
-                    }
-                    google.maps.event.addDomListener(window, 'load', initialize);
-                </script>
+                <input id="pac-input" class="controls" type="text" placeholder="Search Box">
+    <div id="map"></div>
+    <script>
+
+      function initAutocomplete() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 48.463392, lng: -123.311726},
+          zoom: 13,
+          mapTypeId: 'roadmap'
+        });
+        var marker = new google.maps.Marker({
+            position: map.getCenter(),
+            map: map,
+            title: 'Click to zoom'
+        });
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          markers.forEach(function(marker) {
+            marker.setMap(null);
+          });
+          markers = [];
+
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            var icon = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+
+            markers.push(new google.maps.Marker({
+              map: map,
+              icon: icon,
+              title: place.name,
+              position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+      }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGGvtowsI7pB9ymYHTwYLq8sBrXAZKpPI&libraries=places&callback=initAutocomplete"
+         async defer></script>
             </div>
         </div>
          	      
     </div>
     <div id="templatemo_container_end">
+
 	</div>
     
 </div>
